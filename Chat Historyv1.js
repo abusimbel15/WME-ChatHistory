@@ -10,11 +10,13 @@
 // @grant        GM_xmlhttpRequest
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
 // @require      https://code.jquery.com/jquery-3.7.0.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js
 // ==/UserScript==
 
 /* global W */
 /* global WazeWrap */
 /* global $ */
+/* global localforage */
 
 'use strict';
 
@@ -38,8 +40,6 @@ function blinkButton() {
   });
 }
 
-
-
 async function init() {
   async function chatpopuptab() {
     const { tabLabel, tabPane } = W.userscripts.registerSidebarTab('tabChatMSG');
@@ -56,7 +56,6 @@ async function init() {
   var tab = await chatpopuptab();
   var messages = []; // Array zum Speichern der Nachrichten
 
-
   // Funktion zum Formatieren des Datums
   function formatDateTime(date) {
     const options = { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
@@ -64,55 +63,54 @@ async function init() {
   }
 
   // Funktion zum Aktualisieren des Tab-Inhalts
-function updateTabContent() {
-  var msgtxt = messages.map(function(message) {
-    var formattedMessage;
-    if (typeof message === 'object') {
-      // Informationen in separaten Feldern vorhanden
-      const dateTime = formatDateTime(message.datetime);
-      formattedMessage = dateTime + '<br>' +
-                        message.username + '<br>' +
-                        message.message + '<br>';
-    } else {
-      // Alle Informationen in einem Feld enthalten
-      formattedMessage = message + '<br>';
-    }
-    return formattedMessage;
-  }).join('');
-
-  tab.innerHTML = "<h1>Chat Historie</h1><p>" + msgtxt + "</p>";
-  tab.style.padding = '10px';
-  tab.style.backgroundColor = 'lightgray';
-  tab.style.padding = '10px';
-      if (messages.length > 0) {
-    blinkButton();
+  function updateTabContent() {
+    var msgtxt = messages.map(function(message) {
+      var formattedMessage;
+      if (typeof message === 'object') {
+        // Informationen in separaten Feldern vorhanden
+        const dateTime = formatDateTime(message.datetime);
+        formattedMessage = dateTime + '<br>' +
+          message.username + '<br>' +
+          message.message + '<br>';
+      } else {
+        // Alle Informationen in einem Feld enthalten
+        formattedMessage = message + '<br>';
       }
-}
+      return formattedMessage;
+    }).join('');
 
+    tab.innerHTML = "<h1>Chat Historie</h1><p>" + msgtxt + "</p>";
+    tab.style.padding = '10px';
+    tab.style.backgroundColor = 'lightgray';
+    tab.style.padding = '10px';
+    if (messages.length > 0) {
+      blinkButton();
+    }
+  }
 
-// MutationObserver für neue Nachrichten
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    const addedNodes = Array.from(mutation.addedNodes);
-    const newMessages = addedNodes.filter((node) => node.matches && node.matches("div[id='chat-overlay'] div"));
-    // Neue Nachrichten verarbeiten
-    newMessages.forEach((message) => {
-      const text = $(message).text();
-      console.log('Neue Nachricht:', text);
-      console.log('WME ChatHistory......', messages);
+  // MutationObserver für neue Nachrichten
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      const addedNodes = Array.from(mutation.addedNodes);
+      const newMessages = addedNodes.filter((node) => node.matches && node.matches("div[id='chat-overlay'] div"));
+      // Neue Nachrichten verarbeiten
+      newMessages.forEach((message) => {
+        const text = $(message).text();
+        console.log('Neue Nachricht:', text);
+        console.log('WME ChatHistory......', messages);
 
-      // Nachricht in ein Objekt umwandeln und zum Array hinzufügen
-      const messageObj = {
-        datetime: new Date(),
-        username: '', // Benutzername extrahieren oder festlegen
-        id: '', // ID extrahieren oder festlegen
-        message: text
-      };
-      messages.unshift(messageObj); // Neue Nachricht am Anfang des Arrays hinzufügen
+        // Nachricht in ein Objekt umwandeln und zum Array hinzufügen
+        const messageObj = {
+          datetime: new Date(),
+          username: '', // Benutzername extrahieren oder festlegen
+          id: '', // ID extrahieren oder festlegen
+          message: text
+        };
+        messages.unshift(messageObj); // Neue Nachricht am Anfang des Arrays hinzufügen
+      });
+      updateTabContent(); // Tab-Inhalt aktualisieren
     });
-    updateTabContent(); // Tab-Inhalt aktualisieren
   });
-});
 
   // Zielknoten für den Observer festlegen (hier: chat-overlay)
   const targetNode = document.querySelector("div[id='chat-overlay']");
@@ -122,14 +120,23 @@ const observer = new MutationObserver((mutations) => {
 
   // Observer starten
   observer.observe(targetNode, config);
-}
 
+  // Array aus dem Cache laden und verwenden
+  localforage.getItem('arrayCache').then(function(array) {
+    if (array) {
+      console.log('Array erfolgreich aus dem Cache geladen:', array);
+      // Verwende das geladene Array hier
+    } else {
+      console.log('Cache-Array nicht gefunden. Das Array muss möglicherweise erst gespeichert werden.');
+    }
+  });
+}
 
 function bootstrap() {
   if (W && W.map && W.model && W.model.countries && W.model.states && W.loginManager.user && $ && WazeWrap.Ready) {
     checkCountry();
     if (country === null) {
-      setTimeout(function () {
+      setTimeout(function() {
         bootstrap();
       }, 200);
     } else {
@@ -153,5 +160,10 @@ function checkCountry() {
     // console.log(err);
   }
 }
+
+// Speichere das Array im Cache beim Schließen des Tabs oder beim Verlassen der Seite
+window.addEventListener('beforeunload', function() {
+  localforage.setItem('arrayCache', myArray);
+});
 
 bootstrap();
