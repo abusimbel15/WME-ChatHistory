@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME ChatHistoryV2
 // @namespace    none
-// @version      1.0
+// @version      1.1
 // @description  Zeigt die letzte Chat-Nachricht des Chat-Addons an
 // @author       pv
 // @match        https://*.waze.com/*/editor*
