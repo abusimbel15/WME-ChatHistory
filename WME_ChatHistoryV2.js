@@ -12,7 +12,7 @@
 // @require      https://code.jquery.com/jquery-3.7.0.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js
 // @updateURL    https://raw.githubusercontent.com/abusimbel15/WME-ChatHistory/master/WME_ChatHistoryV2.js
-// @downloadURL     https://github.com/abusimbel15/WME-ChatHistory/blob/master/WME_ChatHistoryV2.js
+// @downloadURL  https://raw.githubusercontent.com/abusimbel15/WME-ChatHistory/master/WME_ChatHistoryV2.js
 // ==/UserScript==
 
 /* global W */
