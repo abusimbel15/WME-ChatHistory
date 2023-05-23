@@ -98,7 +98,7 @@ async function init() {
       return formattedMessage;
     }).join('');
 
-    tab.innerHTML = `<h1>Chat Historie</h1><p>${msgtxt}</p>`;
+    tab.innerHTML = `<h1>Chat History</h1><p>${msgtxt}</p>`;
     tab.style.padding = '10px';
     tab.style.backgroundColor = 'lightgray';
     tab.style.padding = '10px';
